@@ -28,6 +28,7 @@ def generate_client():
     return client
 
 client = generate_client()
+
 # Your BigQuery dataset name
 dataset_name = 'raw_layer'  # Change if your dataset name is different
 
@@ -36,6 +37,31 @@ project_id = client.project
 
 # List of possible currencies
 currencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD']
+
+# List of possible order statuses
+status_list = [
+    {'id': 1, 'status_name': 'Pending'},
+    {'id': 2, 'status_name': 'Processing'},
+    {'id': 3, 'status_name': 'Shipped'},
+    {'id': 4, 'status_name': 'Delivered'},
+    {'id': 5, 'status_name': 'Cancelled'},
+    {'id': 6, 'status_name': 'Returned'}
+]
+
+# List of possible payment options
+payment_options_list = [
+    {'id': 1, 'payment_method': 'Credit Card'},
+    {'id': 2, 'payment_method': 'Debit Card'},
+    {'id': 3, 'payment_method': 'PayPal'},
+    {'id': 4, 'payment_method': 'Bank Transfer'},
+    {'id': 5, 'payment_method': 'Cash on Delivery'}
+]
+
+# Generate Status Table
+status_df = pd.DataFrame(status_list)
+
+# Generate Payment Option Table
+payment_options_df = pd.DataFrame(payment_options_list)
 
 # Generate Users Table
 number_of_users = 100
@@ -90,11 +116,15 @@ number_of_orders = 500
 orders = []
 
 for i in range(1, number_of_orders + 1):
+    status_id = random.randint(1, len(status_list))
+    payment_option_id = random.randint(1, len(payment_options_list))
     order = {
         'id': i,
         'user_id': random.randint(1, number_of_users),
         'order_date': fake.date_between(start_date='-1y', end_date='today'),
-        'installments': random.randint(1, 12)  # Installments between 1 and 12
+        'installments': random.randint(1, 12),  # Installments between 1 and 12
+        'status_id': status_id,
+        'payment_option_id': payment_option_id
     }
     orders.append(order)
 
@@ -162,7 +192,8 @@ orders_df['total_transaction_value'] = orders_df['products_value'] + orders_df['
 orders_df.drop(columns=['order_id_x', 'order_id_y'], inplace=True, errors='ignore')
 
 # Optional: Reorder Columns for Clarity
-orders_df = orders_df[['id', 'user_id', 'order_date', 'installments', 'products_value', 'fee_value', 'interest_fee', 'total_transaction_value']]
+orders_df = orders_df[['id', 'user_id', 'order_date', 'installments', 'status_id', 'payment_option_id',
+                       'products_value', 'fee_value', 'interest_fee', 'total_transaction_value']]
 
 # Prepare the Currency Exchange Rates Table
 # Get the date range for which we need exchange rates
@@ -220,3 +251,5 @@ upload_to_bigquery(products_df, 'products')
 upload_to_bigquery(orders_df, 'orders')
 upload_to_bigquery(order_items_df, 'order_items')
 upload_to_bigquery(currency_exchange_rates_df, 'currency_exchange_rates')
+upload_to_bigquery(status_df, 'status')
+upload_to_bigquery(payment_options_df, 'payment_option')

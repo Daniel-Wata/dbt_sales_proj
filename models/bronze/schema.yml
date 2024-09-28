@@ -1,8 +1,13 @@
 version: 2
 
 sources:
-  - name: ebanx_raw
+  - name: raw_layer
     tables:
-      - name: e_clientes
-      - name: e_compras
-      - name: e_cambio
+      - name: orders
+      - name: order_items
+      - name: products
+      - name: users
+      - name: seller_conditions
+      - name: currency_exchange_rates
+      - name: payment_option
+      - name: status

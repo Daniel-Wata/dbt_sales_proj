@@ -76,6 +76,8 @@ erDiagram
         int user_id FK
         date order_date
         int installments
+        int status_id FK
+        int payment_option_id FK
         float products_value
         float fee_value
         float interest_fee
@@ -94,6 +96,14 @@ erDiagram
         string currency PK
         float exchange_rate_to_usd
     }
+    status {
+        int id PK
+        string status_name
+    }
+    payment_option {
+        int id PK
+        string payment_method
+    }
 
     users ||--o{ orders : places
     orders ||--|{ order_items : contains
@@ -102,6 +112,8 @@ erDiagram
     seller_conditions ||--o{ order_items : "sells"
     seller_conditions ||--o{ products : "offers"
     currency_exchange_rates ||--o{ seller_conditions : "defines rates for"
+    orders }o--|| status : "has status"
+    orders }o--|| payment_option : "paid with"
 ```
 
 ### Datawarehouse Layers definition
@@ -121,6 +133,8 @@ flowchart LR
         R4[Orders]
         R5[Order Items]
         R6[Currency Exchange Rates]
+        R7[Status]
+        R8[Payment Option]
     end
     subgraph B["Bronze Layer"]
         style B fill:#cd7f32,stroke:#000,stroke-width:1px,color:#000
@@ -144,6 +158,8 @@ flowchart LR
     R4 --> B 
     R5 --> B 
     R6 --> B 
+    R7 --> B 
+    R8 --> B 
     B --> S --> G
 ```
 
