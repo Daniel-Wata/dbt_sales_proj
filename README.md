@@ -5,7 +5,7 @@
 Use fake data to work with dbt models in conjunction with a bigquery data warehouse, the purpose is to have raw, bronze, silver and gold layers and process the data among the layers using dbt.
 
 ## The data
-I designed a relational database of sales with some basic tables:
+I designed a relational database of sales with some basic tables, the data itself was generated and uploaded to the raw layer using the data_uploader.py file (I explained the tables and relationships to chatGPT and let him do the script =)).
 
 ### Tables and Relationships Explanation
 
