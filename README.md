@@ -4,7 +4,7 @@
 ## Idea
 Use fake data to work with dbt models in conjunction with a bigquery data warehouse, the purpose is to have raw, bronze, silver and gold layers and process the data among the layers using dbt.
 
-## The data
+## The source data
 I designed a relational database of sales with some basic tables, the data itself was generated and uploaded to the raw layer using the data_uploader.py file (I explained the tables and relationships to chatGPT and let him do the script =)).
 
 ### Tables and Relationships Explanation
@@ -102,4 +102,47 @@ erDiagram
     seller_conditions ||--o{ order_items : "sells"
     seller_conditions ||--o{ products : "offers"
     currency_exchange_rates ||--o{ seller_conditions : "defines rates for"
+```
+
+### Datawarehouse Layers definition
+
+For the layers I decided to user a simple bronze, silver, gold structure with the following approach (I'll add the tables relationship as I build them downstream).
+
+```mermaid
+%%{init: {'theme': 'base', 'themeVariables': { 'primaryColor': '#fff', 'background': '#fff'}} }%%
+flowchart LR
+    %% Define subgraphs with custom styles
+    subgraph R["Raw Layer"]
+        style R fill:#e0e0e0,stroke:#000,stroke-width:1px,color:#000
+        direction TB
+        R1[Users]
+        R2[Seller Conditions]
+        R3[Products]
+        R4[Orders]
+        R5[Order Items]
+        R6[Currency Exchange Rates]
+    end
+    subgraph B["Bronze Layer"]
+        style B fill:#cd7f32,stroke:#000,stroke-width:1px,color:#000
+        direction TB
+
+    end
+    subgraph S["Silver Layer"]
+        style S fill:#c0c0c0,stroke:#000,stroke-width:1px,color:#000
+        direction TB
+
+    end
+    subgraph G["Gold Layer"]
+        style G fill:#ffd700,stroke:#000,stroke-width:1px,color:#000
+        direction TB
+
+    end
+  
+    R1 --> B 
+    R2 --> B 
+    R3 --> B 
+    R4 --> B 
+    R5 --> B 
+    R6 --> B 
+    B --> S --> G
 ```
