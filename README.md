@@ -7,6 +7,49 @@ Use fake data to work with dbt models in conjunction with a bigquery data wareho
 ## The data
 I designed a relational database of sales with some basic tables:
 
+### Tables and Relationships Explanation
+
+- **users**
+  - **id**: Primary key.
+  - **name**, **email**, **address**: User details.
+  - **Relationship**: Each user can place multiple orders.
+
+- **seller_conditions**
+  - **id**: Primary key.
+  - **seller_name**, **fee_percentage**, **currency**, **days_until_liquidation**: Seller details and conditions.
+  - **Relationship**:
+    - Offers multiple products.
+    - Sells items in order items.
+    - Associated with currency exchange rates based on the currency.
+
+- **products**
+  - **id**: Primary key.
+  - **product_name**, **seller_id**, **price**: Product details.
+  - **Relationship**:
+    - Each product is offered by one seller (seller_conditions).
+    - A product can be part of many order items.
+
+- **orders**
+  - **id**: Primary key.
+  - **user_id**, **order_date**, **installments**, **products_value**, **fee_value**, **interest_fee**, **total_transaction_value**: Order details.
+  - **Relationship**:
+    - Placed by one user.
+    - Contains multiple order items.
+
+- **order_items**
+  - **id**: Primary key.
+  - **order_id**, **product_id**, **seller_id**, **price**, **fee_value**: Order item details.
+  - **Relationship**:
+    - Belongs to one order.
+    - Includes one product.
+    - Sold by one seller (seller_conditions).
+
+- **currency_exchange_rates**
+  - **date**, **currency**: Composite primary key.
+  - **exchange_rate_to_usd**: Exchange rate on a given date.
+  - **Relationship**:
+    - Provides exchange rates for currencies used by sellers.
+
 ```mermaid
 erDiagram
     users {
@@ -60,10 +103,3 @@ erDiagram
     seller_conditions ||--o{ products : "offers"
     currency_exchange_rates ||--o{ seller_conditions : "defines rates for"
 ```
-
-### Resources:
-- Learn more about dbt [in the docs](https://docs.getdbt.com/docs/introduction)
-- Check out [Discourse](https://discourse.getdbt.com/) for commonly asked questions and answers
-- Join the [chat](https://community.getdbt.com/) on Slack for live discussions and support
-- Find [dbt events](https://events.getdbt.com) near you
-- Check out [the blog](https://blog.getdbt.com/) for the latest news on dbt's development and best practices
