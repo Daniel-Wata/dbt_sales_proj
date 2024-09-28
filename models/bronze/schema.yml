@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: ebanx_raw
+    tables:
+      - name: e_clientes
+      - name: e_compras
+      - name: e_cambio
