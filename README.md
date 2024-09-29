@@ -57,6 +57,9 @@ erDiagram
         string name
         string email
         string address
+        date birthdate
+        datetime created_at
+        datetime updated_at
     }
     seller_conditions {
         int id PK
@@ -64,12 +67,17 @@ erDiagram
         float fee_percentage
         string currency
         int days_until_liquidation
+        datetime created_at
+        datetime updated_at
     }
     products {
         int id PK
         string product_name
+        string category
         int seller_id FK
         float price
+        datetime created_at
+        datetime updated_at
     }
     orders {
         int id PK
@@ -82,6 +90,8 @@ erDiagram
         float fee_value
         float interest_fee
         float total_transaction_value
+        datetime created_at
+        datetime updated_at
     }
     order_items {
         int id PK
@@ -90,6 +100,18 @@ erDiagram
         int seller_id FK
         float price
         float fee_value
+        datetime created_at
+        datetime updated_at
+    }
+    ratings {
+        int id PK
+        int order_id FK
+        int order_item_id FK
+        int rating
+        string comment
+        datetime created_at
+        datetime updated_at
+        datetime deleted_at
     }
     currency_exchange_rates {
         date date PK
@@ -99,10 +121,14 @@ erDiagram
     status {
         int id PK
         string status_name
+        datetime created_at
+        datetime updated_at
     }
     payment_option {
         int id PK
         string payment_method
+        datetime created_at
+        datetime updated_at
     }
 
     users ||--o{ orders : places
@@ -114,6 +140,8 @@ erDiagram
     currency_exchange_rates ||--o{ seller_conditions : "defines rates for"
     orders }o--|| status : "has status"
     orders }o--|| payment_option : "paid with"
+    order_items ||--o{ ratings : "has ratings"
+    orders ||--o{ ratings : "related to"
 ```
 
 ### Datawarehouse Layers definition

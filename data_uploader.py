@@ -16,9 +16,6 @@ import json
 
 
 def get_credentials():
-    scopes= ["https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/bigquery","https://www.googleapis.com/auth/spreadsheets",'https://www.googleapis.com/auth/cloud-platform',            
-                                                                                       "https://www.googleapis.com/auth/drive",
-                                                                                       "https://www.googleapis.com/auth/bigquery"]
     credentials = service_account.Credentials.from_service_account_file('C:/Users/daniel.watanabe_ingr/Documents/dbt-study/dbt-env/dbt_sales_proj/sa.json')
     return credentials
 
@@ -30,22 +27,25 @@ def generate_client():
 client = generate_client()
 
 # Your BigQuery dataset name
-dataset_name = 'raw_layer'  # Change if your dataset name is different
+dataset_name = 'dbt_sales_proj_raw'  # Change if your dataset name is different
 
 # Your GCP project ID
 project_id = client.project
 
+# Current timestamp for created_at and updated_at
+current_timestamp = datetime.utcnow()
+
 # List of possible currencies
 currencies = ['USD', 'EUR', 'GBP', 'JPY', 'AUD', 'CAD']
 
-# List of possible order statuses
+# List of possible order statuses (Updated)
 status_list = [
-    {'id': 1, 'status_name': 'Pending'},
-    {'id': 2, 'status_name': 'Processing'},
-    {'id': 3, 'status_name': 'Shipped'},
-    {'id': 4, 'status_name': 'Delivered'},
-    {'id': 5, 'status_name': 'Cancelled'},
-    {'id': 6, 'status_name': 'Returned'}
+    {'id': 1, 'status_name': 'Declined'},
+    {'id': 2, 'status_name': 'Pending Approval'},
+    {'id': 3, 'status_name': 'Approved'},
+    {'id': 4, 'status_name': 'Sent'},
+    {'id': 5, 'status_name': 'Delivered'},
+    {'id': 6, 'status_name': 'Refunded'}
 ]
 
 # List of possible payment options
@@ -57,22 +57,40 @@ payment_options_list = [
     {'id': 5, 'payment_method': 'Cash on Delivery'}
 ]
 
+# List of possible product categories and sample products (unchanged)
+product_categories = {
+    'Electronics': ['Smartphone', 'Laptop', 'Headphones', 'Smartwatch', 'Camera'],
+    'Home Appliances': ['Refrigerator', 'Microwave', 'Air Conditioner', 'Washing Machine', 'Vacuum Cleaner'],
+    'Books': ['Novel', 'Biography', 'Science Fiction', 'Non-Fiction', 'Fantasy'],
+    'Clothing': ['T-Shirt', 'Jeans', 'Dress', 'Jacket', 'Sweater'],
+    'Sports': ['Football', 'Basketball', 'Tennis Racket', 'Yoga Mat', 'Dumbbells']
+}
+
 # Generate Status Table
 status_df = pd.DataFrame(status_list)
+status_df['created_at'] = current_timestamp
+status_df['updated_at'] = current_timestamp
 
 # Generate Payment Option Table
 payment_options_df = pd.DataFrame(payment_options_list)
+payment_options_df['created_at'] = current_timestamp
+payment_options_df['updated_at'] = current_timestamp
 
-# Generate Users Table
+# Generate Users Table (includes birthdate)
 number_of_users = 100
 users = []
 
 for i in range(1, number_of_users + 1):
+    # Generate a birthdate between 18 and 70 years ago
+    birthdate = fake.date_of_birth(minimum_age=18, maximum_age=70)
     user = {
         'id': i,
         'name': fake.name(),
         'email': fake.email(),
-        'address': fake.address().replace('\n', ', ')
+        'address': fake.address().replace('\n', ', '),
+        'birthdate': birthdate,
+        'created_at': current_timestamp,
+        'updated_at': current_timestamp
     }
     users.append(user)
 
@@ -89,23 +107,34 @@ for i in range(1, number_of_sellers + 1):
         'seller_name': fake.company(),
         'fee_percentage': round(random.uniform(0.05, 0.20), 4),  # Fee between 5% and 20%
         'currency': seller_currency,
-        'days_until_liquidation': random.randint(1, 30)  # Number of days until liquidation
+        'days_until_liquidation': random.randint(1, 30),  # Number of days until liquidation
+        'created_at': current_timestamp,
+        'updated_at': current_timestamp
     }
     sellers.append(seller)
 
 sellers_df = pd.DataFrame(sellers)
 
-# Generate Products Table
+# Generate Products Table (includes category and realistic product names)
 number_of_products = 200
 products = []
 
+category_list = list(product_categories.keys())
+
 for i in range(1, number_of_products + 1):
     seller_id = random.randint(1, number_of_sellers)
+    category = random.choice(category_list)
+    product_name = random.choice(product_categories[category])
+    # Append a random adjective to the product name for variety
+    product_name = f"{fake.word().title()} {product_name}"
     product = {
         'id': i,
-        'product_name': fake.word().title(),
+        'product_name': product_name,
+        'category': category,
         'seller_id': seller_id,
-        'price': round(random.uniform(10, 500), 2)
+        'price': round(random.uniform(10, 500), 2),
+        'created_at': current_timestamp,
+        'updated_at': current_timestamp
     }
     products.append(product)
 
@@ -118,13 +147,16 @@ orders = []
 for i in range(1, number_of_orders + 1):
     status_id = random.randint(1, len(status_list))
     payment_option_id = random.randint(1, len(payment_options_list))
+    order_date = fake.date_between(start_date='-1y', end_date='today')
     order = {
         'id': i,
         'user_id': random.randint(1, number_of_users),
-        'order_date': fake.date_between(start_date='-1y', end_date='today'),
+        'order_date': order_date,
         'installments': random.randint(1, 12),  # Installments between 1 and 12
         'status_id': status_id,
-        'payment_option_id': payment_option_id
+        'payment_option_id': payment_option_id,
+        'created_at': current_timestamp,
+        'updated_at': current_timestamp
     }
     orders.append(order)
 
@@ -150,8 +182,9 @@ for order in orders:
             'product_id': product_id,
             'seller_id': seller_id,
             'price': price,
-            'fee_value': fee_value
-            # No 'currency' column
+            'fee_value': fee_value,
+            'created_at': current_timestamp,
+            'updated_at': current_timestamp
         }
         order_items.append(order_item)
         order_item_id += 1
@@ -193,7 +226,8 @@ orders_df.drop(columns=['order_id_x', 'order_id_y'], inplace=True, errors='ignor
 
 # Optional: Reorder Columns for Clarity
 orders_df = orders_df[['id', 'user_id', 'order_date', 'installments', 'status_id', 'payment_option_id',
-                       'products_value', 'fee_value', 'interest_fee', 'total_transaction_value']]
+                       'products_value', 'fee_value', 'interest_fee', 'total_transaction_value',
+                       'created_at', 'updated_at']]
 
 # Prepare the Currency Exchange Rates Table
 # Get the date range for which we need exchange rates
@@ -222,6 +256,28 @@ for single_date in date_range:
 
 currency_exchange_rates_df = pd.DataFrame(exchange_rates_list)
 
+# Generate Ratings Table
+ratings = []
+rating_id = 1
+
+for order_item in order_items:
+    # Randomly decide if a rating was given (e.g., 70% chance)
+    if random.random() < 0.7:
+        rating = {
+            'id': rating_id,
+            'order_id': order_item['order_id'],
+            'order_item_id': order_item['id'],
+            'rating': random.randint(1, 5),
+            'comment': fake.sentence(nb_words=10),
+            'created_at': current_timestamp,
+            'updated_at': current_timestamp,
+            'deleted_at': None  # Assuming no deletions initially
+        }
+        ratings.append(rating)
+        rating_id += 1
+
+ratings_df = pd.DataFrame(ratings)
+
 # Function to upload DataFrame to BigQuery
 def upload_to_bigquery(df, table_name):
     table_id = f"{project_id}.{dataset_name}.{table_name}"
@@ -234,8 +290,16 @@ def upload_to_bigquery(df, table_name):
     # BigQuery can handle pandas datetime objects, but ensure they're in correct format
     if 'order_date' in df.columns:
         df['order_date'] = pd.to_datetime(df['order_date']).dt.date
+    if 'birthdate' in df.columns:
+        df['birthdate'] = pd.to_datetime(df['birthdate']).dt.date
     if 'date' in df.columns:
         df['date'] = pd.to_datetime(df['date']).dt.date
+    if 'created_at' in df.columns:
+        df['created_at'] = pd.to_datetime(df['created_at'])
+    if 'updated_at' in df.columns:
+        df['updated_at'] = pd.to_datetime(df['updated_at'])
+    if 'deleted_at' in df.columns:
+        df['deleted_at'] = pd.to_datetime(df['deleted_at'])
 
     job = client.load_table_from_dataframe(
         df, table_id, job_config=job_config
@@ -253,3 +317,4 @@ upload_to_bigquery(order_items_df, 'order_items')
 upload_to_bigquery(currency_exchange_rates_df, 'currency_exchange_rates')
 upload_to_bigquery(status_df, 'status')
 upload_to_bigquery(payment_options_df, 'payment_option')
+upload_to_bigquery(ratings_df, 'ratings')

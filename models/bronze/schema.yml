@@ -11,3 +11,32 @@ sources:
       - name: currency_exchange_rates
       - name: payment_option
       - name: status
+      - name: ratings
+
+models:
+  - name: orders
+    description: "Bronze layer model for orders."
+    columns:
+      - name: id
+        description: "Primary key of the order."
+        tests:
+          - not_null
+          - unique
+      - name: user_id
+        description: "Foreign key to the users table."
+        tests:
+          - not_null
+      - name: status_id
+        description: "Foreign key to the status table."
+        tests:
+          - not_null
+          - relationships:
+              to: source('dbt_sales_proj_raw','status')
+              field: id
+      - name: payment_option_id
+        description: "Foreign key to the payment_option table."
+        tests:
+          - not_null
+          - relationships:
+              to: source('dbt_sales_proj_raw','payment_option')
+              field: id
