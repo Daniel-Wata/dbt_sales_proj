@@ -1,6 +1,6 @@
 {{ config(
     materialized='incremental',
-    unique_id='id'
+    unique_key='id'
 ) }}
 
 SELECT
@@ -23,5 +23,5 @@ LEFT JOIN {{ source('dbt_sales_proj_raw', 'status') }} s ON o.status_id = s.id
 LEFT JOIN {{ source('dbt_sales_proj_raw','payment_option')}} po ON po.id = o.payment_option_id
 
 {% if is_incremental() %}
-  where updated_at >= (select coalesce(max(updated_at), '1900-01-01') from {{ this }})
+  where o.updated_at >= (select coalesce(max(updated_at), '1900-01-01') from {{ this }})
 {% endif %}
