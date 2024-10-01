@@ -13,18 +13,15 @@ SELECT
     o.status,
     o.payment_option_id,
     o.payment_method,
-    o.products_value,
-    o.fee_value,
-    o.interest_fee,
-    o.total_transaction_value,
     o.created_at,
     o.updated_at,
     p.product_name,
     sc.seller_name,
     sc.days_until_liquidation,
     sc.currency,
-    oi.price, 
-    oi.fee_value as item_fee_value
+    COUNT(oi.id) as items_quantity,
+    SUM(oi.price) as products_value, 
+    SUM(oi.fee_value) as item_fee_value
 FROM {{ ref('orders') }} o
 INNER JOIN {{ref('order_items')}} oi on oi.order_id = o.id
 INNER JOIN {{ref('products')}} p on p.id = oi.product_id
@@ -36,3 +33,5 @@ WHERE
     SELECT COALESCE(MAX(updated_at), DATETIME('1900-01-01')) FROM {{ this }}
   )
 {% endif %}
+
+GROUP BY ALL
