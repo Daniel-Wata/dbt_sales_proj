@@ -2,5 +2,11 @@ version: 2
 
 models:
   - name: sales_info
-    description: "Dados de venda denormalizadas com clientes, cambio e produtos"
-      
+    description: "Denormalized sales data with client, exchange currency and products"
+  - name: sales_info_usd
+    description: "same as sales_info but adding USD converted values"
+    columns:
+    - name: products_value_usd
+      description: "products value converted to USD"
+      tests:
+        - not_null

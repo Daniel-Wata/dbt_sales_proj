@@ -13,15 +13,15 @@ SELECT
     o.status,
     o.payment_option_id,
     o.payment_method,
-    o.created_at,
-    o.updated_at,
     p.product_name,
     sc.seller_name,
     sc.days_until_liquidation,
     sc.currency,
     COUNT(oi.id) as items_quantity,
     SUM(oi.price) as products_value, 
-    SUM(oi.fee_value) as item_fee_value
+    SUM(oi.fee_value) as item_fee_value,
+    o.created_at,
+    {{ get_max_datetime(['o', 'oi', 'p', 'sc'], ['updated_at', 'updated_at', 'updated_at', 'updated_at']) }} as updated_at
 FROM {{ ref('orders') }} o
 INNER JOIN {{ref('order_items')}} oi on oi.order_id = o.id
 INNER JOIN {{ref('products')}} p on p.id = oi.product_id
