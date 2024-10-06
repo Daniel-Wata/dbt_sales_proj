@@ -16,6 +16,7 @@ SELECT
     p.product_name,
     sc.seller_name,
     sc.days_until_liquidation,
+    DATE_ADD(o.order_date, INTERVAL sc.days_until_liquidation DAY) as date_liquidation,
     sc.currency,
     COUNT(oi.id) as items_quantity,
     SUM(oi.price) as products_value, 

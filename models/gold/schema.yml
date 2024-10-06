@@ -1,0 +1,5 @@
+version: 2
+
+models:
+  - name: seller_receivables
+    description: "Based on approved sales, calculate and generate a calendar of receivables grouped by each seller"

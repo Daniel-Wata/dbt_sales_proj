@@ -10,3 +10,10 @@ models:
       description: "products value converted to USD"
       tests:
         - not_null
+  - name: cash_in_installments
+    description: "Cash flow of incomes according to the number of installments chosen by the buyer"
+    columns:
+    - name: products_value_usd
+      description: "products value converted to USD"
+      tests:
+        - not_null
